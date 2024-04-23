@@ -10,16 +10,18 @@ After clonning the repository:
  > Note: The default port is 8082, it can by changed within __sys.config__ (*/erl-job-processorconfig/sys.config).
 
 Once the app started use a framework for testing APIs (e.g. Postman or Thunder Client for Visual Code) to send requests to available endpoints:
-  1.  method: **POST**, endpoint: **:8082/sort-job-tasks**
-  2.  method: **POST**, endpoint: **:8082/job-to-bash**
+
+  1.  method: **POST**, endpoint: **:8082/sort-job-tasks** - returns the same job with ordered tasks based on their requirements or an error;
+  2.  method: **POST**, endpoint: **:8082/job-to-bash** - returns a bash script representation of the job or an error.
 
 Or use **curl** from another command line interface (make sure you're in the project directory to be able to access the test data):
-    1. endpoint  **:8082/job-to-bash**:
+
+    1. endpoint  :8082/job-to-bash:
     - curl -d "@testdata/for-valid-response.json" -X POST http://localhost:8082/job-to-bash -w "\n"
     - curl -d "@testdata/for-cyclic-requirements.json" -X POST http://localhost:8082/job-to-bash -w "\n"
     - curl -d "@testdata/for-missing-requirements.json" -X POST http://localhost:8082/job-to-bash -w "\n"
 
-    2. endpoint **:8082/sort-job-tasks**:
+    2. endpoint :8082/sort-job-tasks:
     - curl -d "@testdata/for-valid-response.json" -X POST http://localhost:8082/sort-job-tasks -w "\n"
     - curl -d "@testdata/for-cyclic-requirements.json" -X POST http://localhost:8082/sort-job-tasks -w "\n"
     - curl -d "@testdata/for-missing-requirements.json" -X POST http://localhost:8082/sort-job-tasks -w "\n"
