@@ -1,10 +1,11 @@
 -module(job_processor_server).
 
 -export([
-    start/1
+    start/0
 ]).
 
-start(Port) ->
+start() ->
+    {ok, Port} = application:get_env(job_processor_server, port),
     {ok, ListenSocket} = gen_tcp:listen(Port, [{reuseaddr, true}]),
     spawn(fun() -> accept(ListenSocket) end),
     receive

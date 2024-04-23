@@ -20,7 +20,7 @@ init([]) ->
     ChildSpecs = [
         #{
             id => jps_1,
-            start => {job_processor_server, start, [8080]}
+            start => {job_processor_server, start, []}
         }
     ],
     {ok, {SupFlags, ChildSpecs}}.
