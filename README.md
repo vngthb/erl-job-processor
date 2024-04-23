@@ -13,6 +13,17 @@ Once the app started use a framework for testing APIs (e.g. Postman or Thunder C
   1.  method: **POST**, endpoint: **:8082/sort-job-tasks**
   2.  method: **POST**, endpoint: **:8082/job-to-bash**
 
+Or use **curl** from another command line interface (make sure you're in the project directory to be able to access the test data):
+    1. endpoint  **:8082/job-to-bash**:
+    - curl -d "@testdata/for-valid-response.json" -X POST http://localhost:8082/job-to-bash -w "\n"
+    - curl -d "@testdata/for-cyclic-requirements.json" -X POST http://localhost:8082/job-to-bash -w "\n"
+    - curl -d "@testdata/for-missing-requirements.json" -X POST http://localhost:8082/job-to-bash -w "\n"
+
+    2. endpoint **:8082/sort-job-tasks**:
+    - curl -d "@testdata/for-valid-response.json" -X POST http://localhost:8082/sort-job-tasks -w "\n"
+    - curl -d "@testdata/for-cyclic-requirements.json" -X POST http://localhost:8082/sort-job-tasks -w "\n"
+    - curl -d "@testdata/for-missing-requirements.json" -X POST http://localhost:8082/sort-job-tasks -w "\n"
+
 Payload examples:
 <details>
 <summary>1. for a valid response</summary>
