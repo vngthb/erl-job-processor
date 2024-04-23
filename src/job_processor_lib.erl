@@ -70,28 +70,3 @@ make_digraph(Vertices, Edges) ->
 
 delete_digraph(Digraph) ->
     digraph:delete(Digraph).
-
-job() ->
-    [
-        {<<"tasks">>, [
-            [
-                {<<"name">>, <<"task-1">>},
-                {<<"command">>, <<"touch /tmp/file1">>}
-            ],
-            [
-                {<<"name">>, <<"task-2">>},
-                {<<"command">>, <<"cat /tmp/file1">>},
-                {<<"requires">>, [<<"task-3">>]}
-            ],
-            [
-                {<<"name">>, <<"task-3">>},
-                {<<"command">>, <<"echo 'Hello World!' > /tmp/file1">>},
-                {<<"requires">>, [<<"task-1">>]}
-            ],
-            [
-                {<<"name">>, <<"task-4">>},
-                {<<"command">>, <<"rm /tmp/file1">>},
-                {<<"requires">>, [<<"task-2">>, <<"task-3">>]}
-            ]
-        ]}
-    ].
