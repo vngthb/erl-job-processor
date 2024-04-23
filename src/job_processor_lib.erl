@@ -7,15 +7,24 @@
 
 sort_job_tasks(Job) ->
     Tasks = proplists:get_value(<<"tasks">>, Job),
-    [{<<"tasks">>, [sort_tasks(Tasks)]}].
+    case sort_tasks(Tasks) of
+        {error, _, _} = Error ->
+            Error;
+        SortedTasks ->
+            [{<<"tasks">>, [SortedTasks]}]
+    end.
 
 job_to_bash(Job) ->
     Tasks = proplists:get_value(<<"tasks">>, Job),
-    SortedTasks = sort_tasks(Tasks),
-    Commands =
-        [[<<"#!/usr/bin/env bash">>, 10]] ++
-            [[proplists:get_value(<<"command">>, Task), $\n] || Task <- SortedTasks],
-    iolist_to_binary(Commands).
+    case sort_tasks(Tasks) of
+        {error, _, _} = Error ->
+            Error;
+        SortedTasks ->
+            Commands =
+                [[<<"#!/usr/bin/env bash">>, 10]] ++
+                    [[proplists:get_value(<<"command">>, Task), $\n] || Task <- SortedTasks],
+            iolist_to_binary(Commands)
+    end.
 
 sort_tasks(Tasks) ->
     Vertices = Tasks,
@@ -44,7 +53,7 @@ find_missing_requirements(Tasks) ->
 pair_tasks(Tasks) ->
     LabeledTasks = [{proplists:get_value(<<"name">>, Task), Task} || Task <- Tasks],
     TaskPairs = lists:flatten([make_task_pairs(Task) || Task <- Tasks]),
-    [{proplists:get_value(X, LabeledTasks), proplists:get_value(Y, LabeledTasks)} || {X, Y} <- TaskPairs].
+    [{proplists:get_value(X, LabeledTasks), proplists:get_value(Y, LabeledTasks)}|| {X, Y} <- TaskPairs].
 
 make_task_pairs(Task) ->
     Name = proplists:get_value(<<"name">>, Task),
