@@ -48,10 +48,15 @@ fetch_content(Socket, Headers) ->
 handle(Socket, {{abs_path, <<"/sort-job-tasks">>}, Method, _Headers, Body0}) ->
     case Method of
         'POST' ->
-            Job0 = jason:decode(Body0),
-            Job = job_processor_lib:sort_job_tasks(Job0),
-            Body = jason:encode(Job),
-            reply(Socket, "200", [], Body);
+            Job = jason:decode(Body0),
+            {Status, ResponseBody} =
+                case job_processor_lib:sort_job_tasks(Job) of
+                    {error, _, _} = Error ->
+                        {"400", jason:encode(error_to_proplist(Error))};
+                    Result ->
+                        {"200", jason:encode(Result)}
+                end,
+            reply(Socket, Status, [], ResponseBody);
         _ ->
             reply(Socket, "405", [], "")
     end;
@@ -59,8 +64,14 @@ handle(Socket, {{abs_path, <<"/job-to-bash">>}, Method, _Headers, Body0}) ->
     case Method of
         'POST' ->
             Job = jason:decode(Body0),
-            Body = job_processor_lib:job_to_bash(Job),
-            reply(Socket, "200", [], Body);
+            {Status, ResponseBody} =
+                case job_processor_lib:job_to_bash(Job) of
+                    {error, _, _} = Error->
+                        {"400", jason:encode(error_to_proplist(Error))};
+                    Result ->
+                        {"200", Result}
+                end,
+            reply(Socket, Status, [], ResponseBody);
         _ ->
             reply(Socket, "405", [], "")
     end;
@@ -71,3 +82,6 @@ reply(Socket, Status, Headers, Body) ->
     Response = ["HTTP/1.0 ", Status, "\r\n", Headers, "\r\n", Body],
     gen_tcp:send(Socket, Response),
     gen_tcp:close(Socket).
+
+error_to_proplist({Type, Reason, Details}) ->
+    [{Type, Reason}, {details, Details}].
