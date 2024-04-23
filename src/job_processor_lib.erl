@@ -18,13 +18,12 @@ job_to_bash(Job) ->
     iolist_to_binary(Commands).
 
 sort_tasks(Tasks) ->
-    Vertices = find_vertices(Tasks),
-    Edges = lists:flatten([find_edges(Task) || Task <- Tasks]),
+    Vertices = Tasks,
+    Edges = pair_tasks(Tasks),
     Digraph = make_digraph(Vertices, Edges),
     CyclicRequirements = digraph_utils:cyclic_strong_components(Digraph),
-    AllRequirements = find_all_requirements(Tasks),
+    MissingRequirements = find_missing_requirements(Tasks),
     OrderedTasks = digraph_utils:postorder(Digraph),
-    MissingRequirements = AllRequirements -- OrderedTasks,
     Result =
         if
             CyclicRequirements /= [] ->
@@ -37,14 +36,17 @@ sort_tasks(Tasks) ->
     delete_digraph(Digraph),
     Result.
 
-find_all_requirements(Tasks) ->
+find_missing_requirements(Tasks) ->
+    AllTasks = [proplists:get_value(<<"name">>, Task, []) || Task <- Tasks],
     AllRequirements = lists:flatten([proplists:get_value(<<"requires">>, Task, []) || Task <- Tasks]),
-    lists:usort(AllRequirements).
+    lists:usort(AllRequirements) -- AllTasks.
 
-find_vertices(Tasks) ->
-    [proplists:get_value(<<"name">>, Task) || Task <- Tasks].
+pair_tasks(Tasks) ->
+    LabeledTasks = [{proplists:get_value(<<"name">>, Task), Task} || Task <- Tasks],
+    TaskPairs = lists:flatten([make_task_pairs(Task) || Task <- Tasks]),
+    [{proplists:get_value(X, LabeledTasks), proplists:get_value(Y, LabeledTasks)} || {X, Y} <- TaskPairs].
 
-find_edges(Task) ->
+make_task_pairs(Task) ->
     Name = proplists:get_value(<<"name">>, Task),
     case proplists:get_value(<<"requires">>, Task) of
         undefined -> [];
@@ -54,9 +56,7 @@ find_edges(Task) ->
 make_digraph(Vertices, Edges) ->
     Digraph = digraph:new(),
     lists:foreach(fun(Vertex) -> digraph:add_vertex(Digraph, Vertex) end, Vertices),
-    lists:foreach(
-        fun({Vertex1, Vertex2}) -> digraph:add_edge(Digraph, Vertex1, Vertex2) end, Edges
-    ),
+    lists:foreach(fun({Vertex1, Vertex2}) -> digraph:add_edge(Digraph, Vertex1, Vertex2) end, Edges),
     Digraph.
 
 delete_digraph(Digraph) ->
