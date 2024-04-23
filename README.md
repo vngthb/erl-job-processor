@@ -16,6 +16,7 @@ Once the app started use a framework for testing APIs (e.g. Postman or Thunder C
 Payload examples:
 <details>
 <summary>1. valid response</summary>
+  
 ```
 {
     "tasks": [
@@ -48,10 +49,12 @@ Payload examples:
     ]
 }
 ```
+  
 </details>
 
 <details>
 <summary>2. bad request, reason: cyclic_requirements</summary>
+  
 ```
 {
     "tasks": [
@@ -84,10 +87,12 @@ Payload examples:
     ]
 }
 ```
+
 </details>
 
 <details>
 <summary>3. bad request, reason: missing_requirements</summary>
+  
 ```
 {
     "tasks": [
@@ -120,4 +125,5 @@ Payload examples:
     ]
 }
 ```
+
 </details>
