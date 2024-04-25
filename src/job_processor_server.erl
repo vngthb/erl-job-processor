@@ -1,23 +1,22 @@
 -module(job_processor_server).
 
 -export([
-    start/0
+    start/1
 ]).
 
-start() ->
-    {ok, Port} = application:get_env(job_processor_server, port),
+start(Args) ->
+    Port = proplists:get_value(port, Args),
     {ok, ListenSocket} = gen_tcp:listen(Port, [{reuseaddr, true}]),
-    spawn(fun() -> accept(ListenSocket) end),
-    receive
-        stop -> gen_tcp:close(ListenSocket)
-    end.
+    accept(ListenSocket).
 
 accept(ListenSocket) ->
     {ok, Socket} = gen_tcp:accept(ListenSocket),
     inet:setopts(Socket, [{packet, http_bin}, {active, false}]),
-    spawn(fun() -> accept(ListenSocket) end),
-    RequestDetails = read(Socket, [], []),
-    handle(Socket, RequestDetails).
+    spawn(fun() ->
+        Request = read(Socket, [], []),
+        handle(Socket, Request)
+    end),
+    accept(ListenSocket).
 
 read(Socket, Request0, Headers0) ->
     case gen_tcp:recv(Socket, 0, 5000) of
@@ -67,7 +66,7 @@ handle(Socket, {{abs_path, <<"/job-to-bash">>}, Method, _Headers, Body0}) ->
             Job = jason:decode(Body0),
             {Status, ResponseBody} =
                 case job_processor_lib:job_to_bash(Job) of
-                    {error, _, _} = Error->
+                    {error, _, _} = Error ->
                         {"400", jason:encode(error_to_proplist(Error))};
                     Result ->
                         {"200", Result}
@@ -84,5 +83,5 @@ reply(Socket, Status, Headers, Body) ->
     gen_tcp:send(Socket, Response),
     gen_tcp:close(Socket).
 
-error_to_proplist({Type, Reason, Details}) ->
-    [{Type, Reason}, {details, Details}].
+error_to_proplist({error, Reason, Details}) ->
+    [{error, [{Reason, Details}]}].

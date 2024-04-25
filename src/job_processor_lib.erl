@@ -26,8 +26,7 @@ job_to_bash(Job) ->
             iolist_to_binary(Commands)
     end.
 
-sort_tasks(Tasks) ->
-    Vertices = Tasks,
+sort_tasks(Vertices = Tasks) ->
     Edges = pair_tasks(Tasks),
     Digraph = make_digraph(Vertices, Edges),
     CyclicRequirements = digraph_utils:cyclic_strong_components(Digraph),
